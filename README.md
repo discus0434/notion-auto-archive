@@ -1,5 +1,9 @@
 # notion-auto-archive
 
+<p align="center">
+  <img src="https://storage.googleapis.com/zenn-user-upload/5489a48f5133-20230106.png" width=80%>
+</p>
+
 ## Installation
 
 1. NotionとTwitterのアクセストークンを取得する
