@@ -1,0 +1,1 @@
+*/30 * * * * /home/workspace/notion-auto-archive/archive_urls_at_direct_messages.sh >> crontab.log 2>&1
