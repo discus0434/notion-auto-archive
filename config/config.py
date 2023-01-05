@@ -38,7 +38,6 @@ CANDIDATE_LABELS = [
     # Services
     "aws",
     "google cloud",
-    "notion",
     # Tools
     "docker",
     "kubernetes",
