@@ -1,10 +1,13 @@
 FROM nvidia/cuda:11.2.0-cudnn8-runtime-ubuntu18.04
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBCONF_NOWARNINGS=yes
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl git wget unzip software-properties-common libgl1-mesa-dev
+    curl git wget unzip software-properties-common libgl1-mesa-dev nano && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # install node
 RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
@@ -31,6 +34,5 @@ RUN cd /home/workspace/notion-auto-archive && \
 RUN cd /home/workspace/notion-auto-archive/js && \
     npm install
 
-# set cron job to run "notion-auto-archive/archive_urls_at_direct_messages.sh" every 30 minutes
-RUN chmod +x /home/workspace/notion-auto-archive/archive_urls_at_direct_messages.sh && \
-    echo "*/30 * * * * /home/workspace/notion-auto-archive/archive_urls_at_direct_messages.sh" >> /etc/crontab
+RUN cd /home/workspace/notion-auto-archive && \
+    chmod +x start_watcher.sh
