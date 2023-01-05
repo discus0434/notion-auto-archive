@@ -1,8 +1,10 @@
 import sys
+import time
 import subprocess
 import logging
 from logging import getLogger
 
+import schedule
 from tweepy import Client
 
 from config import (
@@ -15,6 +17,28 @@ from config import (
     URLS_LOG_PATH,
 )
 from lib import compare_and_save_urls, retrieve_urls_from_direct_message
+
+
+def task():
+    urls = retrieve_urls_from_direct_message(client, user_name=TWITTER_USER_NAME)
+    new_urls = compare_and_save_urls(urls, urls_save_path=URLS_LOG_PATH)
+
+    if new_urls:
+        logger.info(f"Found new url: {new_urls}")
+
+        for url in new_urls:
+            logger.info(f"Starting to process and upload to Notion: {url}")
+
+            try:
+                subprocess.run(
+                    ["python", "main.py", url],
+                )
+            except Exception as e:
+                logger.info(f"Failed to process and upload to Notion: {url}")
+                continue
+
+            logger.info(f"Finished processing and uploading to Notion: {url}")
+
 
 if __name__ == "__main__":
     sh = logging.StreamHandler(sys.stdout)
@@ -32,20 +56,8 @@ if __name__ == "__main__":
         access_token_secret=TWITTER_TOKEN_SECRET,
     )
 
-    urls = retrieve_urls_from_direct_message(client, user_name=TWITTER_USER_NAME)
-    new_urls = compare_and_save_urls(urls, urls_save_path=URLS_LOG_PATH)
+    schedule.every(30).minutes.do(task)
 
-    logger.info(f"Found new url: {new_urls}")
-
-    for url in new_urls:
-        logger.info(f"Starting to process and upload to Notion: {url}")
-
-        try:
-            subprocess.run(
-                ["python", "main.py", url],
-            )
-        except Exception as e:
-            logger.info(f"Failed to process and upload to Notion: {url}")
-            continue
-
-        logger.info(f"Finished processing and uploading to Notion: {url}")
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
