@@ -42,7 +42,7 @@ def task():
 
 if __name__ == "__main__":
     sh = logging.StreamHandler(sys.stdout)
-    sh.setLevel(logging.DEBUG)
+    sh.setLevel(logging.INFO)
     logger = getLogger(__name__)
     logger.addHandler(sh)
 
