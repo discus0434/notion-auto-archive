@@ -22,13 +22,13 @@ WORKDIR /home/workspace
 RUN git clone https://github.com/discus0434/notion-auto-archive.git
 
 # install python packages
-RUN cd notion-auto-archive && \
+RUN cd /home/workspace/notion-auto-archive && \
     python -m venv venv && \
     source venv/bin/activate && \
     pip install -r requirements.txt
 
 # install node packages
-RUN cd js && \
+RUN cd /home/workspace/notion-auto-archive/js && \
     npm install
 
 # set cron job to run "notion-auto-archive/archive_urls_at_direct_messages.sh" every 30 minutes
