@@ -37,16 +37,18 @@ def label_text(
     # if the tags are too many or too few, adjust the threshold
     while len(result["labels"]) == 0 or len(result["labels"]) >= 4:
         if len(result["labels"]) >= 4:
+            threshold += 0.05
             result["labels"] = [
                 label
                 for label, score in zip(result["labels"], result["scores"])
-                if score > threshold + 0.05
+                if score > threshold
             ]
         else:
+            threshold -= 0.05
             result["labels"] = [
                 label
                 for label, score in zip(result["labels"], result["scores"])
-                if score > threshold - 0.05
+                if score > threshold
             ]
 
     return result["labels"]
