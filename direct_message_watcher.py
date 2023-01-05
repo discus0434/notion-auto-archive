@@ -41,8 +41,8 @@ def task():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, force=True)
     sh = logging.StreamHandler(sys.stdout)
-    sh.setLevel(logging.INFO)
     logger = getLogger(__name__)
     logger.addHandler(sh)
 
