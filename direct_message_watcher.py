@@ -42,9 +42,7 @@ def task():
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, force=True)
-    sh = logging.StreamHandler(sys.stdout)
     logger = getLogger(__name__)
-    logger.addHandler(sh)
 
     logger.info("Starting direct message watcher...")
 

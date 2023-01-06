@@ -35,6 +35,7 @@ TWITTER_USER_NAME = os.getenv("TWITTER_USER_NAME")
 CANDIDATE_LABELS = [
     # AI/ML
     "natural language processing",
+    "NLP",
     "computer vision",
     "reinforcement learning",
     "artificial intelligence",
