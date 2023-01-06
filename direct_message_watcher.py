@@ -41,7 +41,7 @@ def task():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, force=True)
+    logging.basicConfig(level=logging.DEBUG, force=True)
     logger = getLogger(__name__)
 
     logger.info("Starting direct message watcher...")

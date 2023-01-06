@@ -59,5 +59,9 @@ def classify_text(text: str, candidate_labels: list[str]) -> dict:
         "zero-shot-classification",
         model="MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
     )
+
+    if len(text) > 2048:
+        text = text[:2048]
+
     result = classifier(text, candidate_labels, multi_label=True)
     return result
