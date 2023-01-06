@@ -40,6 +40,13 @@ CANDIDATE_LABELS = [
     "reinforcement learning",
     "artificial intelligence",
     "machine learning",
+    # AI/ML Techniques
+    "transformer",
+    "bert",
+    "gpt",
+    "diffusion model",
+    "stable diffusion",
+    "generative model",
     # Programming Languages
     "sql",
     "python",
