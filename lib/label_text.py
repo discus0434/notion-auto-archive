@@ -35,6 +35,7 @@ def label_text(
     ]
 
     # if the tags are too many or too few, adjust the threshold
+    counter = 0
     while len(result["labels"]) == 0 or len(result["labels"]) >= 4:
         if len(result["labels"]) >= 4:
             threshold += 0.05
@@ -50,6 +51,10 @@ def label_text(
                 for label, score in zip(result["labels"], result["scores"])
                 if score > threshold
             ]
+            
+        counter += 1
+        if counter > 10:
+            break
 
     return result["labels"]
 
@@ -59,9 +64,6 @@ def classify_text(text: str, candidate_labels: list[str]) -> dict:
         "zero-shot-classification",
         model="MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
     )
-
-    if len(text) > 2048:
-        text = text[:2048]
 
     result = classifier(text, candidate_labels, multi_label=True)
     return result

@@ -41,7 +41,11 @@ def task():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG, force=True)
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        force=True,
+    )
     logger = getLogger(__name__)
 
     logger.info("Starting direct message watcher...")
@@ -54,7 +58,7 @@ if __name__ == "__main__":
         access_token_secret=TWITTER_TOKEN_SECRET,
     )
 
-    schedule.every(30).minutes.do(task)
+    schedule.every(2).minutes.do(task)
 
     while True:
         schedule.run_pending()

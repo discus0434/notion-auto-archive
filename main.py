@@ -1,4 +1,5 @@
 import argparse
+import logging
 from logging import getLogger
 
 from config import (
@@ -12,7 +13,10 @@ from lib import get_web_content, label_text, markdown_to_notion, post_to_notion
 
 
 def main():
-
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
     logger = getLogger(__name__)
     logger.debug("Starting main function...")
 
