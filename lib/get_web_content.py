@@ -40,14 +40,7 @@ def get_web_content(url: str) -> ProcessedContent:
 def process_content(ret: requests.Response) -> ProcessedContent:
     title = BeautifulSoup(ret.text, "html.parser").title.string
     html_content = Document(ret.text).summary()
-
-    markdown_content = md(html_content, heading_style="ATX")
-    markdown_content = re.sub(
-        pattern=r"(\#\s\n)",
-        repl="# ",
-        string=markdown_content,
-    )
-
+    markdown_content = markdownify_content(html_content)
     cleansed_content = cleansing_text_to_feed(markdown_content)
 
     p = ProcessedContent(
@@ -58,6 +51,28 @@ def process_content(ret: requests.Response) -> ProcessedContent:
     )
 
     return p
+
+
+def markdownify_content(html_content: str) -> str:
+    """Convert HTML-formatted content to markdown-formatted one.
+
+    Parameters
+    ----------
+    html_content : str
+        HTML-formatted content
+    Returns
+    -------
+    str
+        Markdown-formatted content
+    """
+    markdown_content = md(html_content, heading_style="ATX")
+    markdown_content = re.sub(
+        pattern=r"(\#\s\n)",
+        repl="# ",
+        string=markdown_content,
+    )
+
+    return markdown_content
 
 
 def cleansing_text_to_feed(text: str) -> str:
