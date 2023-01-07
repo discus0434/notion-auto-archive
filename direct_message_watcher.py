@@ -58,10 +58,8 @@ if __name__ == "__main__":
         access_token_secret=TWITTER_TOKEN_SECRET,
     )
 
-    task()
+    schedule.every(30).minutes.do(task)
 
-    # schedule.every(30).minutes.do(task)
-
-    # while True:
-    #     schedule.run_pending()
-    #     time.sleep(1)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
