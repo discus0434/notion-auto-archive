@@ -5,7 +5,7 @@ ENV DEBCONF_NOWARNINGS=yes
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl git wget unzip software-properties-common libgl1-mesa-dev && \
+    curl git wget unzip software-properties-common libgl1-mesa-dev \
     nano libtext-unidecode-perl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
