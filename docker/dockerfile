@@ -10,18 +10,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# # install texlive
-# RUN apt-get update && apt-get install -y texlive-latex-recommended \
-#     texlive-latex-extra \
-#     texlive-fonts-recommended \
-#     texlive-fonts-extra \
-#     texlive-lang-japanese \
-#     texlive-science \
-#     texlive-extra-utils \
-#     texlive-lang-cjk \
-#     latexml && \
-#     apt-get clean && \
-#     rm -rf /var/lib/apt/lists/*
+# install latexml dependencies
+RUN apt-get update -qq && apt-get install -qy texlive-full
+RUN apt-get update -qq && apt-get install -qy texlive-latex-recommended \
+    libarchive-zip-perl libfile-which-perl libimage-size-perl  \
+    libio-string-perl libjson-xs-perl libtext-unidecode-perl \
+    libparse-recdescent-perl liburi-perl libuuid-tiny-perl libwww-perl \
+    libxml2 libxml-libxml-perl libxslt1.1 libxml-libxslt-perl  \
+    imagemagick libimage-magick-perl perl-doc build-essential \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /usr/src/latexml
+WORKDIR /usr/src/latexml
+ENV LATEXML_COMMIT=7fe716a7e8d67958e4005512c0c6f2acf838781a
+RUN curl -L https://github.com/brucemiller/LaTeXML/tarball/$LATEXML_COMMIT | tar --strip-components 1 -zxf - \
+    && perl Makefile.PL \
+    && make \
+    && make install
 
 # install node
 RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
