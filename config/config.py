@@ -82,9 +82,9 @@ CANDIDATE_LABELS = [
 # Path
 ########################################################################
 # Path to the directory where the tmp file or log is located
-ENGRAFO_OUTPUT_PATH = Path("content")
-PROCESSED_JSON_PATH = ENGRAFO_OUTPUT_PATH / "content.json"
-URLS_LOG_PATH = Path("urls.log")
+CACHE_PATH = Path("content")
+PROCESSED_JSON_PATH = CACHE_PATH / "content.json"
+URLS_LOG_PATH = CACHE_PATH / "urls.log"
 
 # Path to the directory where the javascript file is located
 JAVASCRIPT_PATH = Path("js/readable.js")

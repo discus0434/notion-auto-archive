@@ -8,6 +8,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import arxiv
+import pdf2image
+from markdownify import markdownify
+
 
 @dataclass
 class ProcessedContent:
@@ -19,7 +22,8 @@ class ProcessedContent:
 
 
 def get_web_content(
-    url: str, javascript_path: Path, json_path: Path
+    url: str,
+    cache_path: Path,
 ) -> ProcessedContent:
     """Get web page of the URL & process it to 5 types of contents as follows:
     1. title of the web page
@@ -40,29 +44,78 @@ def get_web_content(
     if url.startswith("https://arxiv.org/"):
         arxiv_id = url.split("/")[-1]
         info = next(arxiv.Search(id_list=[arxiv_id]).results())
-        info.download_source(json_path.parent.absolute())
         subprocess.run(
-            ["docker", "exec", "engrafo", "script/arxiv-download", arxiv_id],
+            ["/bin/bash", "scripts/arxiv-download.sh", arxiv_id, cache_path.absolute()],
+            timeout=100,
+        )
+
+        for root, dirs, files in os.walk(top=cache_path):
+            for file in files:
+                if file.endswith(".pdf"):
+                    path = Path(os.path.join(root, file))
+                    image = pdf2image.convert_from_path(path)
+                    image[0].save(path.with_suffix(".png"), "PNG")
+
+                if file.endswith(".tex"):
+                    path = Path(os.path.join(root, file))
+                    with open(path, "r") as f:
+                        text = f.read()
+
+                    if ".pdf" in text:
+                        # replace .pdf with .png and save
+                        text = text.replace(".pdf", ".png")
+                        with open(path, "w") as f:
+                            f.write(text)
+
+        subprocess.run(
+            [
+                "docker",
+                "exec",
+                "engrafo",
+                "engrafo",
+                "output",
+                "output/",
+            ],
             timeout=100,
         )
         subprocess.run(
-            ["docker", "exec", "engrafo", "engrafo", "--no-post-processing", f"output/arxiv/{arxiv_id}", "output/"],
-            timeout=100,
-        )
-        subprocess.run(
-            ["node", javascript_path.absolute(), "../engrafo/index.html", json_path.absolute()]
+            [
+                "node",
+                "js/readable.js",
+                cache_path.absolute() / "index.html",
+                cache_path.absolute() / "readable.json",
+            ]
         )
     else:
-        subprocess.run(["node", javascript_path.absolute(), url, json_path.absolute()])
+        subprocess.run(["node", "js/readable.js", url, cache_path.absolute() / "readable.json"])
 
-    with open(json_path, "r") as f:
+    with open(cache_path / "readable.json", "r") as f:
         ret = json.load(f)
-    os.remove(json_path.absolute())
 
-    title = ret["article"]["title"]
-    html_content = ret["article"]["content"]
-    markdown_content = ret["markdown"]
-    notion_content = ret["blocks"]
+    title = ret["title"]
+    html_content = ret["content"]
+
+    markdown_content = markdownify(html_content, heading_style="ATX")
+    markdown_content = re.sub(
+        pattern=r"(\#\s\n)",
+        repl="# ",
+        string=markdown_content,
+    )
+
+    with open(cache_path / "content.md", "w") as f:
+        f.write(markdown_content)
+
+    subprocess.run(
+        [
+            "node",
+            "js/markdown_to_notion.js",
+            cache_path / "content.md",
+            cache_path / "content.json",
+        ]
+    )
+
+    with open(cache_path / "content.json", "r") as f:
+        notion_content = json.load(f)
 
     if url.startswith("https://arxiv.org/"):
         cleansed_content = info.summary.replace("\n", " ")

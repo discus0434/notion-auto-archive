@@ -2,9 +2,6 @@ import fetch from "node-fetch";
 import { Readability } from "@mozilla/readability";
 import { JSDOM } from "jsdom";
 import fs from "fs";
-import matter from "gray-matter";
-import TurndownService from "turndown";
-import { markdownToBlocks } from "@tryfabric/martian";
 
 // get the article content
 async function getArticleContentFromURL(url) {
@@ -39,21 +36,5 @@ if (process.argv[2].startsWith("http")) {
   article = getArticleContentFromFile(process.argv[2]);
 }
 
-// convert the article content to markdown
-const turndownService = new TurndownService();
-const markdown = turndownService.turndown(article.content);
-// parse the article content with gray-matter
-const matterResult = matter(markdown);
-// convert the article content to Notion blocks
-const blocks = markdownToBlocks(matterResult.content, {
-  strictImageUrls: false,
-});
-// write the article content, markdown and blocks to a file
-fs.writeFileSync(
-  process.argv[3],
-  JSON.stringify({
-    article,
-    markdown,
-    blocks,
-  })
-);
+// write the article content to a file
+fs.writeFileSync(process.argv[3], JSON.stringify(article));

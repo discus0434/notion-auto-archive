@@ -1,4 +1,5 @@
 from .config import (
+    CACHE_PATH,
     CANDIDATE_LABELS,
     DATABASE_ID,
     GYAZO_ACCESS_TOKEN,
@@ -28,4 +29,5 @@ __all__ = [
     "TWITTER_TOKEN_SECRET",
     "TWITTER_USER_NAME",
     "URLS_LOG_PATH",
+    "CACHE_PATH",
 ]

@@ -111,7 +111,7 @@ def organize_notion_blocks(
         # remove invalid link if it is not http(s); such as mailto: or #bib:
         if block["type"] == "text":
             if block["text"]["link"]["url"][:4] != "http":
-                del block
+                del block["text"]["link"]
 
         if block["type"] != "text" and block["type"] != "image":
             block_type = block["type"]
@@ -120,7 +120,7 @@ def organize_notion_blocks(
                     inner_block = process_for_image(inner_block)
                 if inner_block["type"] == "text":
                     if inner_block["text"]["link"]["url"][:4] != "http":
-                        del inner_block
+                        del inner_block["text"]["link"]
 
     return processed_content
 
