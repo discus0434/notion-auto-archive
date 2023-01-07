@@ -6,7 +6,7 @@ from config import (
     CANDIDATE_LABELS,
     DATABASE_ID,
     JAVASCRIPT_PATH,
-    JSON_PATH,
+    PROCESSED_JSON_PATH,
     NOTION_ACCESS_TOKEN,
 )
 from lib import get_web_content, label_text, post_to_notion
@@ -29,7 +29,7 @@ def main():
     processed_content = get_web_content(
         url=args.url,
         javascript_path=JAVASCRIPT_PATH,
-        json_path=JSON_PATH,
+        json_path=PROCESSED_JSON_PATH,
     )
 
     logger.debug(f"Fetching content: Done!")

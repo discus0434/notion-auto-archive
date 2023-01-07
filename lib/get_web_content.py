@@ -7,6 +7,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+import arxiv
 
 @dataclass
 class ProcessedContent:
@@ -36,15 +37,37 @@ def get_web_content(
     ProcessedContent
         Processed content of the web page, explained above.
     """
-    subprocess.run(["node", javascript_path.absolute(), url, json_path.absolute()])
+    if url.startswith("https://arxiv.org/"):
+        arxiv_id = url.split("/")[-1]
+        info = next(arxiv.Search(id_list=[arxiv_id]).results())
+        info.download_source(json_path.parent.absolute())
+        subprocess.run(
+            ["docker", "exec", "engrafo", "script/arxiv-download", arxiv_id],
+            timeout=100,
+        )
+        subprocess.run(
+            ["docker", "exec", "engrafo", "engrafo", "--no-post-processing", f"output/arxiv/{arxiv_id}", "output/"],
+            timeout=100,
+        )
+        subprocess.run(
+            ["node", javascript_path.absolute(), "../engrafo/index.html", json_path.absolute()]
+        )
+    else:
+        subprocess.run(["node", javascript_path.absolute(), url, json_path.absolute()])
+
     with open(json_path, "r") as f:
         ret = json.load(f)
     os.remove(json_path.absolute())
+
     title = ret["article"]["title"]
     html_content = ret["article"]["content"]
     markdown_content = ret["markdown"]
-    cleansed_content = cleansing_text_to_feed(markdown_content)
     notion_content = ret["blocks"]
+
+    if url.startswith("https://arxiv.org/"):
+        cleansed_content = info.summary.replace("\n", " ")
+    else:
+        cleansed_content = cleansing_text_to_feed(markdown_content)
 
     return ProcessedContent(
         title=title,
