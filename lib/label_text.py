@@ -51,7 +51,7 @@ def label_text(
                 for label, score in zip(result["labels"], result["scores"])
                 if score > threshold
             ]
-            
+
         counter += 1
         if counter > 10:
             break

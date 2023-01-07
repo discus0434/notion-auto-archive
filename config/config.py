@@ -83,8 +83,4 @@ CANDIDATE_LABELS = [
 ########################################################################
 # Path to the directory where the tmp file or log is located
 CACHE_PATH = Path("content")
-PROCESSED_JSON_PATH = CACHE_PATH / "content.json"
 URLS_LOG_PATH = CACHE_PATH / "urls.log"
-
-# Path to the directory where the javascript file is located
-JAVASCRIPT_PATH = Path("js/readable.js")

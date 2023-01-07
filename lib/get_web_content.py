@@ -77,6 +77,7 @@ def get_web_content(
                 "output/",
             ],
             timeout=100,
+            stdout=subprocess.DEVNULL,
         )
         subprocess.run(
             [
@@ -87,7 +88,9 @@ def get_web_content(
             ]
         )
     else:
-        subprocess.run(["node", "js/readable.js", url, cache_path.absolute() / "readable.json"])
+        subprocess.run(
+            ["node", "js/readable.js", url, cache_path.absolute() / "readable.json"]
+        )
 
     with open(cache_path / "readable.json", "r") as f:
         ret = json.load(f)
