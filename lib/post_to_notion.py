@@ -1,6 +1,5 @@
-from notion_client import Client
-
 from lib import ProcessedContent
+from notion_client import Client
 
 
 def post_to_notion(
@@ -9,7 +8,6 @@ def post_to_notion(
     processed_content: ProcessedContent,
     tags: list[str],
     url: str,
-    notioned_content: dict,
 ) -> None:
     """Post content to Notion.
 
@@ -25,8 +23,6 @@ def post_to_notion(
         list of tags given to the content.
     url : str
         url of the content.
-    notioned_content : dict
-        notion-compatible format of the content.
     """
     notion = Client(auth=access_token)
 
@@ -44,5 +40,5 @@ def post_to_notion(
         }
     )
 
-    for line in notioned_content:
-        notion.blocks.children.append(block_id=db["id"], children=[line])
+    for block in processed_content.notion_content:
+        notion.blocks.children.append(block_id=db["id"], children=[block])

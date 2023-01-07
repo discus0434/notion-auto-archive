@@ -9,7 +9,7 @@ from config import (
     JSON_PATH,
     NOTION_ACCESS_TOKEN,
 )
-from lib import get_web_content, label_text, markdown_to_notion, post_to_notion
+from lib import get_web_content, label_text, post_to_notion
 
 
 def main():
@@ -26,21 +26,16 @@ def main():
 
     logger.debug(f"Fetching content from: {args.url}")
 
-    processed_responses = get_web_content(args.url)
-
-    logger.debug(f"Fetching content: Done!")
-    logger.debug("Converting content to Notion format...")
-
-    notioned_content = markdown_to_notion(
+    processed_content = get_web_content(
+        url=args.url,
         javascript_path=JAVASCRIPT_PATH,
         json_path=JSON_PATH,
-        markdown_content=processed_responses.markdown_content,
     )
 
-    logger.debug("Converting content to Notion format: Done!")
+    logger.debug(f"Fetching content: Done!")
     logger.debug("Labeling content using mDeBERTa-v3...")
 
-    tags = label_text(processed_responses.cleansed_content, CANDIDATE_LABELS, 0.45)
+    tags = label_text(processed_content.cleansed_content, CANDIDATE_LABELS, 0.45)
 
     logger.debug("Labeling content using mDeBERTa-v3: Done!")
     logger.debug("Uploading content to Notion...")
@@ -48,10 +43,9 @@ def main():
     post_to_notion(
         access_token=NOTION_ACCESS_TOKEN,
         database_id=DATABASE_ID,
-        processed_content=processed_responses,
+        processed_content=processed_content,
         tags=tags,
         url=args.url,
-        notioned_content=notioned_content,
     )
 
     logger.debug("Main function: Done!")

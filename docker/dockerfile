@@ -5,9 +5,23 @@ ENV DEBCONF_NOWARNINGS=yes
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl git wget unzip software-properties-common libgl1-mesa-dev nano && \
+    curl git wget unzip software-properties-common libgl1-mesa-dev && \
+    nano libtext-unidecode-perl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# # install texlive
+# RUN apt-get update && apt-get install -y texlive-latex-recommended \
+#     texlive-latex-extra \
+#     texlive-fonts-recommended \
+#     texlive-fonts-extra \
+#     texlive-lang-japanese \
+#     texlive-science \
+#     texlive-extra-utils \
+#     texlive-lang-cjk \
+#     latexml && \
+#     apt-get clean && \
+#     rm -rf /var/lib/apt/lists/*
 
 # install node
 RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - && \

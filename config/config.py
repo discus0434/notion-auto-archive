@@ -78,4 +78,4 @@ JSON_PATH = Path("notion.json")
 URLS_LOG_PATH = Path("urls.log")
 
 # Path to the directory where the javascript file is located
-JAVASCRIPT_PATH = Path("js/markdown.js")
+JAVASCRIPT_PATH = Path("js/readable.js")
