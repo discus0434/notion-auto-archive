@@ -27,6 +27,14 @@ TWITTER_TOKEN_SECRET = os.getenv("TWITTER_TOKEN_SECRET")
 TWITTER_USER_NAME = os.getenv("TWITTER_USER_NAME")
 
 ########################################################################
+# Gyazo
+########################################################################
+# Gyazo API key (https://gyazo.com/oauth/applications)
+# To be accessible to images semi-permanently, you need to upload images to gyazo.
+# Notion API does not support uploading images.
+GYAZO_ACCESS_TOKEN = os.getenv("GYAZO_ACCESS_TOKEN")
+
+########################################################################
 # Label Candidates
 ########################################################################
 # Labels to be used for the zero-shot-classification model.
@@ -74,8 +82,5 @@ CANDIDATE_LABELS = [
 # Path
 ########################################################################
 # Path to the directory where the tmp file or log is located
-JSON_PATH = Path("notion.json")
-URLS_LOG_PATH = Path("urls.log")
-
-# Path to the directory where the javascript file is located
-JAVASCRIPT_PATH = Path("js/readable.js")
+CACHE_PATH = Path("content")
+URLS_LOG_PATH = CACHE_PATH / "urls.log"
