@@ -31,10 +31,11 @@ function getArticleContentFromFile(path) {
 let article;
 
 if (process.argv[2].startsWith("http")) {
-  article = getArticleContentFromURL(process.argv[2]);
+  getArticleContentFromURL(process.argv[2]).then((article) => {
+    fs.writeFileSync(process.argv[3], JSON.stringify(article));
+  });
 } else {
   article = getArticleContentFromFile(process.argv[2]);
+  // write the article content to a file
+  fs.writeFileSync(process.argv[3], JSON.stringify(article));
 }
-
-// write the article content to a file
-fs.writeFileSync(process.argv[3], JSON.stringify(article));
