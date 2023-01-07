@@ -8,6 +8,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sudo curl git wget unzip \
     software-properties-common \
     libgl1-mesa-dev \
+    xvfb \
+    wkhtmltopdf \
     poppler-utils && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
