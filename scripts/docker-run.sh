@@ -5,12 +5,13 @@ docker run -it \
     --gpus all \
     --env-file ./.env  \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    -v ./engrafo:/home/workspace/engrafo \
+    -v engrafo:/home/workspace/notion-auto-archive/content \
     -d \
     --restart=always \
     notion-auto-archive:latest /bin/bash
 
 docker run -it \
-    -v ./engrafo:/app/output \
+    --name engrafo \
+    -v engrafo:/app/output \
     -d \
     arxivvanity/engrafo:latest /bin/bash
