@@ -1,11 +1,17 @@
 services:
   notion-auto-archive:
     image: notion-auto-archive:latest
-    build: docker/.
     restart: always
     ports:
       - 8080:80
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./engrafo:/home/workspace/engrafo
     env_file:
       - .env
+  engrafo:
+    image: arxivvanity/engrafo:latest
+    ports:
+      - 8081:80
+    volumes:
+      - ./engrafo:/app/output
