@@ -7,6 +7,12 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+import arxiv
+import imgkit
+import pdf2image
+from bs4 import BeautifulSoup
+from markdownify import markdownify
+
 
 @dataclass
 class ProcessedContent:
@@ -18,7 +24,8 @@ class ProcessedContent:
 
 
 def get_web_content(
-    url: str, javascript_path: Path, json_path: Path
+    url: str,
+    cache_path: Path,
 ) -> ProcessedContent:
     """Get web page of the URL & process it to 5 types of contents as follows:
     1. title of the web page
@@ -36,15 +43,97 @@ def get_web_content(
     ProcessedContent
         Processed content of the web page, explained above.
     """
-    subprocess.run(["node", javascript_path.absolute(), url, json_path.absolute()])
-    with open(json_path, "r") as f:
-        ret = json.load(f)
-    os.remove(json_path.absolute())
-    title = ret["article"]["title"]
-    html_content = ret["article"]["content"]
-    markdown_content = ret["markdown"]
-    cleansed_content = cleansing_text_to_feed(markdown_content)
-    notion_content = ret["blocks"]
+    if url.startswith("https://arxiv.org/"):
+        arxiv_id = url.split("/")[-1]
+        info = next(arxiv.Search(id_list=[arxiv_id]).results())
+        subprocess.run(
+            ["/bin/bash", "scripts/arxiv-download.sh", arxiv_id, cache_path.absolute()],
+            timeout=100,
+        )
+
+        for root, dirs, files in os.walk(top=cache_path.absolute()):
+            for file in files:
+                if file.endswith(".pdf"):
+                    path = Path(os.path.join(root, file))
+                    image = pdf2image.convert_from_path(path)
+                    image[0].save(path.with_suffix(".png"), "PNG")
+
+                if file.endswith(".tex"):
+                    path = Path(os.path.join(root, file))
+                    with open(path, "r") as f:
+                        text = f.read()
+
+                    if ".pdf" in text:
+                        # replace .pdf with .png and save
+                        text = text.replace(".pdf", ".png")
+                        with open(path, "w") as f:
+                            f.write(text)
+
+        subprocess.run(
+            [
+                "docker",
+                "exec",
+                "engrafo",
+                "engrafo",
+                "output/",
+                "output/",
+            ],
+            timeout=1000,
+            stdout=subprocess.DEVNULL,
+        )
+        soup = BeautifulSoup(
+            open("/home/workspace/notion-auto-archive/content/index.html"),
+            "html.parser",
+        )
+        ta = soup.find_all("table")
+        for i, t in enumerate(ta):
+            if not "img" in str(t):
+                imgkit.from_string(
+                    str(t), cache_path / f"insert_{i}.png", options={"xvfb": ""}
+                )
+                # replace table with image
+                t.replace_with(f'<a><img src="insert_{i}.png" alt="insert_{i}"></a>')
+        title = info.title
+        html_content = str(soup.text)
+    else:
+        subprocess.run(
+            ["node", "js/readable.js", url, cache_path.absolute() / "readable.json"]
+        )
+
+        with open(cache_path.absolute() / "readable.json", "r") as f:
+            ret = json.load(f)
+
+        title = ret["title"]
+        html_content = ret["content"]
+
+    markdown_content = markdownify(
+        html_content, heading_style="ATX", escape_underscores=False
+    )
+    markdown_content = re.sub(
+        pattern=r"(\#\s\n)",
+        repl="# ",
+        string=markdown_content,
+    )
+
+    with open(cache_path.absolute() / "content.md", "w") as f:
+        f.write(markdown_content)
+
+    subprocess.run(
+        [
+            "node",
+            "js/markdown_to_notion.js",
+            cache_path.absolute() / "content.md",
+            cache_path.absolute() / "content.json",
+        ]
+    )
+
+    with open(cache_path.absolute() / "content.json", "r") as f:
+        notion_content = json.load(f)
+
+    if url.startswith("https://arxiv.org/"):
+        cleansed_content = info.summary.replace("\n", " ")
+    else:
+        cleansed_content = cleansing_text_to_feed(markdown_content)
 
     return ProcessedContent(
         title=title,

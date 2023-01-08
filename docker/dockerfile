@@ -5,8 +5,26 @@ ENV DEBCONF_NOWARNINGS=yes
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl git wget unzip software-properties-common libgl1-mesa-dev && \
-    nano libtext-unidecode-perl && \
+    sudo curl git wget unzip \
+    software-properties-common \
+    libgl1-mesa-dev \
+    xvfb \
+    wkhtmltopdf \
+    poppler-utils && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN sudo apt-get update && \
+    sudo apt-get install -y \
+    ca-certificates \
+    gnupg \
+    lsb-release && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
+    echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+    $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    sudo apt-get update && \
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -36,4 +54,5 @@ RUN cd /home/workspace/notion-auto-archive/js && \
     npm install
 
 RUN cd /home/workspace/notion-auto-archive && \
-    chmod +x start_watcher.sh
+    chmod +x start_watcher.sh && \
+    chmod +x scripts/arxiv-download.sh

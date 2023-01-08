@@ -1,8 +1,8 @@
 from .config import (
+    CACHE_PATH,
     CANDIDATE_LABELS,
     DATABASE_ID,
-    JAVASCRIPT_PATH,
-    JSON_PATH,
+    GYAZO_ACCESS_TOKEN,
     NOTION_ACCESS_TOKEN,
     TWITTER_ACCESS_TOKEN,
     TWITTER_API_KEY,
@@ -16,9 +16,8 @@ from .config import (
 __all__ = [
     "CANDIDATE_LABELS",
     "DATABASE_ID",
-    "JAVASCRIPT_PATH",
-    "JSON_PATH",
     "NOTION_ACCESS_TOKEN",
+    "GYAZO_ACCESS_TOKEN",
     "TWITTER_ACCESS_TOKEN",
     "TWITTER_API_KEY",
     "TWITTER_API_SECRET",
@@ -26,4 +25,5 @@ __all__ = [
     "TWITTER_TOKEN_SECRET",
     "TWITTER_USER_NAME",
     "URLS_LOG_PATH",
+    "CACHE_PATH",
 ]
