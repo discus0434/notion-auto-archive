@@ -5,6 +5,7 @@ from logging import getLogger
 from pathlib import Path
 
 from config import (
+    ARXIV_CATEGORIES,
     CACHE_PATH,
     CANDIDATE_LABELS,
     DATABASE_ID,
@@ -31,12 +32,19 @@ def main():
     processed_content = get_web_content(
         url=args.url,
         cache_path=CACHE_PATH,
+        arxiv_categories=ARXIV_CATEGORIES,
     )
 
     logger.debug(f"Fetching content: Done!")
     logger.debug("Labeling content using mDeBERTa-v3...")
 
-    tags = label_text(processed_content.cleansed_content, CANDIDATE_LABELS, 0.45)
+    if processed_content.tags is None:
+        tags = label_text(
+            text=processed_content.cleansed_content,
+            candidate_labels=CANDIDATE_LABELS + list(ARXIV_CATEGORIES.values()),
+            threshold=0.45,
+        )
+        processed_content.tags = tags
 
     logger.debug("Labeling content using mDeBERTa-v3: Done!")
     logger.debug("Uploading content to Notion...")
@@ -46,8 +54,7 @@ def main():
         gyazo_access_token=GYAZO_ACCESS_TOKEN,
         database_id=DATABASE_ID,
         processed_content=processed_content,
-        tags=tags,
-        url=args.url,
+        url=processed_content.url,
     )
 
     logger.debug("Main function: Done!")

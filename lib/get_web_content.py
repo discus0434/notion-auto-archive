@@ -17,27 +17,37 @@ from markdownify import markdownify
 @dataclass
 class ProcessedContent:
     title: str
+    url: str
     html_content: str
     markdown_content: str
     notion_content: list
     cleansed_content: str
+    tags: list[str] | None = None
 
 
 def get_web_content(
     url: str,
     cache_path: Path,
+    arxiv_categories: dict[str, str],
 ) -> ProcessedContent:
     """Get web page of the URL & process it to 5 types of contents as follows:
     1. title of the web page
-    2. html-formatted one, which is extracted by readability
-    3. markdown-formatted one
-    4. notion-compatible one
-    5. cleansed one
+    2. url of the web page
+    3. html-formatted one, which is extracted by readability
+    4. markdown-formatted one
+    5. notion-compatible one
+    6. cleansed one
+    7. tags, which is given only when the URL is arXiv at the moment
 
     Parameters
     ----------
     url : str
         URL of the web page
+    cache_path : Path
+        Path to the cache directory
+    arxiv_categories : dict[str, str]
+        Dictionary of arXiv categories.
+        e.g. {"cs.AI": "artificial intelligence"}
     Returns
     -------
     ProcessedContent
@@ -132,15 +142,21 @@ def get_web_content(
 
     if url.startswith("https://arxiv.org/"):
         cleansed_content = info.summary.replace("\n", " ")
+        tags = [
+            arxiv_categories[info.categories[i]] for i in range(len(info.categories))
+        ]
     else:
         cleansed_content = cleansing_text_to_feed(markdown_content)
+        tags = None
 
     return ProcessedContent(
         title=title,
+        url=url,
         html_content=html_content,
         markdown_content=markdown_content,
         cleansed_content=cleansed_content,
         notion_content=notion_content,
+        tags=tags,
     )
 
 
