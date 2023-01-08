@@ -11,6 +11,7 @@ from config import (
     JSON_PATH,
 )
 
+
 def main():
     li = []
     try:
@@ -26,7 +27,9 @@ def main():
                     inner_url = f"https://zenn.dev{entry.find('a', class_='ArticleList_link__vf_6E')['href']}"
 
                     try:
-                        num_likes = entry.find("span", class_="ArticleList_like__c4148").text
+                        num_likes = entry.find(
+                            "span", class_="ArticleList_like__c4148"
+                        ).text
                     except AttributeError:
                         continue
 
@@ -37,7 +40,9 @@ def main():
                     inner_soup = BeautifulSoup(res_inner.text, "html.parser")
 
                     tags = []
-                    for element in inner_soup.find_all("div", class_="View_topicName__rxKth"):
+                    for element in inner_soup.find_all(
+                        "div", class_="View_topicName__rxKth"
+                    ):
                         tags.append(element.text)
 
                     p = get_web_content(

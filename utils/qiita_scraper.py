@@ -11,6 +11,7 @@ from config import (
     JSON_PATH,
 )
 
+
 def main():
     li = []
     try:

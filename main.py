@@ -41,8 +41,8 @@ def main():
     if processed_content.tags is None:
         tags = label_text(
             text=processed_content.cleansed_content,
-            candidate_labels=CANDIDATE_LABELS + list(ARXIV_CATEGORIES.values()),
-            threshold=0.45,
+            candidate_labels=CANDIDATE_LABELS,
+            threshold=0.9,
         )
         processed_content.tags = tags
 
@@ -54,7 +54,6 @@ def main():
         gyazo_access_token=GYAZO_ACCESS_TOKEN,
         database_id=DATABASE_ID,
         processed_content=processed_content,
-        url=processed_content.url,
     )
 
     logger.debug("Main function: Done!")
