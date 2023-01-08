@@ -52,5 +52,11 @@ def classify_text(text: str, candidate_labels: list[str]) -> dict:
         model="MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
     )
 
-    result = classifier(text, candidate_labels, multi_label=True)
+    result = classifier(
+        text,
+        candidate_labels,
+        multi_label=True,
+        hypothesis_template="This text is about {}.",
+    )
+    
     return result
