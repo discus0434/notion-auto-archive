@@ -78,7 +78,7 @@ def get_web_content(
                 "output/",
                 "output/",
             ],
-            timeout=300,
+            timeout=1000,
             stdout=subprocess.DEVNULL,
         )
         soup = BeautifulSoup(

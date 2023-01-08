@@ -58,6 +58,7 @@ def main():
             path = Path(os.path.join(root, file))
             if not path.name.endswith(".log"):
                 os.remove(path)
+    for root, dirs, files in os.walk(CACHE_PATH):
         for dir in dirs:
             path = Path(os.path.join(root, dir))
             os.rmdir(path)
