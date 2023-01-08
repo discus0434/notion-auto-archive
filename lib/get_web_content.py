@@ -198,4 +198,15 @@ def cleansing_text_to_feed(text: str) -> str:
         string=text,
     )
 
+    if len(text) > 2048:
+        # truncate the sentence to approx. 2048 characters
+        # end with a period or "。".
+        try:
+            if "。" in text[:2048]:
+                text = text[:2048].rsplit("。", 1)[0] + "。"
+            else:
+                text = text[:2048].rsplit(".", 1)[0] + "."
+        except Exception:
+            text = text[:2048]
+
     return text
