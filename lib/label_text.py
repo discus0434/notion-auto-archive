@@ -1,5 +1,6 @@
 import warnings
 
+import pandas as pd
 from transformers import pipeline
 
 # Suppress the warning of transformers
@@ -7,7 +8,9 @@ warnings.simplefilter("ignore", UserWarning)
 
 
 def label_text(
-    text: str, candidate_labels: list[str], threshold: float = 0.45
+    text: str,
+    candidate_labels: list[str],
+    threshold: float = 0.9,
 ) -> list[str]:
     """Label the text with the candidate labels, using the zero-shot-classification model.
 
@@ -19,44 +22,28 @@ def label_text(
         candidate labels, which is given at 'config/config.py'
     threshold : float, optional
         threshold to filter the labels whether the score is higher
-        than the threshold or not, by default 0.45
+        than the threshold or not, by default 0.9
     Returns
     -------
     list[str]
         list of labels
     """
 
-    result = classify_text(text, candidate_labels)
+    res = classify_text(text, candidate_labels)
 
-    result["labels"] = [
-        label
-        for label, score in zip(result["labels"], result["scores"])
-        if score > threshold
-    ]
+    res = pd.DataFrame({"labels": res["labels"], "scores": res["scores"]})
+    labels = res[res["scores"] > threshold].sort_values(by="scores", ascending=False)
 
-    # if the tags are too many or too few, adjust the threshold
-    counter = 0
-    while len(result["labels"]) == 0 or len(result["labels"]) >= 4:
-        if len(result["labels"]) >= 4:
-            threshold += 0.05
-            result["labels"] = [
-                label
-                for label, score in zip(result["labels"], result["scores"])
-                if score > threshold
-            ]
-        else:
-            threshold -= 0.05
-            result["labels"] = [
-                label
-                for label, score in zip(result["labels"], result["scores"])
-                if score > threshold
-            ]
+    while len(labels) == 0:
+        threshold -= 0.05
+        labels = res[res["scores"] > threshold].sort_values(
+            by="scores", ascending=False
+        )
 
-        counter += 1
-        if counter > 10:
-            break
+    if len(labels) > 5:
+        labels = labels[:5]
 
-    return result["labels"]
+    return labels["labels"].tolist()
 
 
 def classify_text(text: str, candidate_labels: list[str]) -> dict:
@@ -71,4 +58,5 @@ def classify_text(text: str, candidate_labels: list[str]) -> dict:
         multi_label=True,
         hypothesis_template="This text is about {}.",
     )
+
     return result
