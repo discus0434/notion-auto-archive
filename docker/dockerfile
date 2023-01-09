@@ -56,3 +56,4 @@ RUN cd /home/workspace/notion-auto-archive/js && \
 RUN cd /home/workspace/notion-auto-archive && \
     chmod +x start_watcher.sh && \
     chmod +x scripts/arxiv-download.sh
+

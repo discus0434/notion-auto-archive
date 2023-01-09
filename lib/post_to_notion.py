@@ -13,8 +13,6 @@ def post_to_notion(
     gyazo_access_token: str,
     database_id: str,
     processed_content: ProcessedContent,
-    tags: list[str],
-    url: str,
 ) -> None:
     """Post content to Notion.
 
@@ -28,10 +26,6 @@ def post_to_notion(
         database id of the notion. this is given by environment variable.
     processed_content : ProcessedContent
         processed content of web page.
-    tags : list[str]
-        list of tags given to the content.
-    url : str
-        url of the content.
     """
     notion = Client(auth=notion_access_token)
 
@@ -50,8 +44,10 @@ def post_to_notion(
             },
             "properties": {
                 "Name": {"title": [{"text": {"content": processed_content.title}}]},
-                "Tags": {"multi_select": [{"name": tag} for tag in tags]},
-                "URL": {"url": url},
+                "Tags": {
+                    "multi_select": [{"name": tag} for tag in processed_content.tags]
+                },
+                "URL": {"url": processed_content.url},
             },
         }
     )
