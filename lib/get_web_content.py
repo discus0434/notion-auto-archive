@@ -8,10 +8,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import arxiv
-import imgkit
 import pdf2image
 from bs4 import BeautifulSoup
 from markdownify import markdownify
+from transformers import pipeline
 
 
 @dataclass
@@ -56,6 +56,10 @@ def get_web_content(
     if url.startswith("https://arxiv.org/"):
         arxiv_id = url.split("/")[-1]
         info = next(arxiv.Search(id_list=[arxiv_id]).results())
+        translator = pipeline("translation", model="staka/fugumt-en-ja")
+        translated_abstract = translator(info.summary)[0]["translation_text"]
+        del translator
+
         subprocess.run(
             ["/bin/bash", "scripts/arxiv-download.sh", arxiv_id, cache_path.absolute()],
             timeout=100,
@@ -91,18 +95,44 @@ def get_web_content(
             timeout=1000,
             stdout=subprocess.DEVNULL,
         )
-        html_content = open(
-            "/home/workspace/notion-auto-archive/content/index.html"
-        ).read()
-        soup = BeautifulSoup(html_content, "html.parser")
-        ta = soup.find_all("table")
-        for i, t in enumerate(ta):
-            if not "img" in str(t):
-                imgkit.from_string(
-                    str(t), cache_path / f"insert_{i}.png", options={"xvfb": ""}
-                )
-                # replace table with image
-                t.replace_with(f'<a><img src="insert_{i}.png" alt="insert_{i}"></a>')
+        html = open("/home/workspace/notion-auto-archive/content/index.html").read()
+        soup = BeautifulSoup(html, "html.parser")
+
+        figures = []
+        for fig in soup.find_all("figure"):
+            figure = {}
+            if not len(fig.find_all("td")) > 0:
+                for img, caption in zip(
+                    fig.find_all("img"), fig.find_all("figcaption")
+                ):
+                    figures.append({"img": img, "caption": caption.text})
+
+        html_figures = []
+        for figure in figures:
+            html_figures.append(
+                f"""
+                <span>
+                    {str(figure["img"])}
+                    <p>{figure["caption"]}</p>
+                </span>
+                """
+            )
+
+        html_content = f"""
+            <html>
+                <body>
+                    <h2>Abstract</h2>
+                        <p>{translated_abstract}</p>
+                    <h2>Figures</h2>
+                    <div>
+                        {''.join(list(map(
+                            lambda x: f"<section>{str(x)}</section>", html_figures
+                        )))}
+                    </div>
+                </body>
+            </html>
+            """
+
         title = info.title
     else:
         subprocess.run(
