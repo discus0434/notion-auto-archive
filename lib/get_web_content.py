@@ -81,10 +81,10 @@ def get_web_content(
             timeout=300,
             stdout=subprocess.DEVNULL,
         )
-        soup = BeautifulSoup(
-            open("/home/workspace/notion-auto-archive/content/index.html"),
-            "html.parser",
-        )
+        html_content = open(
+            "/home/workspace/notion-auto-archive/content/index.html"
+        ).read()
+        soup = BeautifulSoup(html_content, "html.parser")
         ta = soup.find_all("table")
         for i, t in enumerate(ta):
             if not "img" in str(t):
@@ -94,7 +94,6 @@ def get_web_content(
                 # replace table with image
                 t.replace_with(f'<a><img src="insert_{i}.png" alt="insert_{i}"></a>')
         title = info.title
-        html_content = str(soup.text)
     else:
         subprocess.run(
             ["node", "js/readable.js", url, cache_path.absolute() / "readable.json"]
