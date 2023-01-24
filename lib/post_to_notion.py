@@ -112,7 +112,7 @@ def organize_notion_blocks(
         if image_path_or_url.startswith("http"):
             image = requests.get(image_path_or_url).content
         else:
-            image = Path(f"content/{image_path_or_url}").read_bytes()
+            image = Path(image_path_or_url).read_bytes()
 
         res = upload_image_to_gyazo(image, access_token)
         time.sleep(10)

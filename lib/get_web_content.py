@@ -59,15 +59,17 @@ def get_web_content(
                 "pdf-reader",
                 "python",
                 "puddle.py",
+                "--pdf_path",
                 f"/home/workspace/pdf-reader/output/{arxiv_id}.pdf",
+                "--out_path",
                 "/home/workspace/pdf-reader/output/",
             ],
-            timeout=3000,
+            timeout=3600,
             stdout=subprocess.DEVNULL,
         )
 
-        markdown_content = "\n".join(
-           [f"![{i}.png]({path})" for i, path in enumerate(cache_path.glob("*.png"))]
+        markdown_content = " ".join(
+            [f"![{i}.png]({path})" for i, path in enumerate(sorted(cache_path.glob("*.png")))]
         )
 
         with open(cache_path.absolute() / "content.md", "w") as f:
