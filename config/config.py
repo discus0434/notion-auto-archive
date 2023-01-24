@@ -44,9 +44,8 @@ CANDIDATE_LABELS = [
     # AI/ML
     "natural language processing",
     "reinforcement learning",
-    "computer vision",
+    "computer vision and pattern recognition",
     "machine learning",
-    "pattern recognition",
     "semantic segmentation",
     "object detection",
     "image classification",
@@ -76,10 +75,10 @@ CANDIDATE_LABELS = [
     "fastapi",
     "pytorch",
     "tensorflow",
-    "api",
     "git",
+    "switch bot",
     # Genres
-    "web",
+    "technology",
     "lifehack",
     "business",
 ]
