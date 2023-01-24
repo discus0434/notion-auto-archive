@@ -87,7 +87,7 @@ CANDIDATE_LABELS = [
 # Path
 ########################################################################
 # Path to the directory where the tmp file or log is located
-CACHE_PATH = Path("content")
+CACHE_PATH = Path("output")
 URLS_LOG_PATH = CACHE_PATH / "urls.log"
 
 ########################################################################

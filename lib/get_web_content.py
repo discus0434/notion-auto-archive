@@ -1,27 +1,21 @@
 from __future__ import annotations
 
 import json
-import os
 import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
 import arxiv
-import pdf2image
-from bs4 import BeautifulSoup
 from markdownify import markdownify
-from transformers import pipeline
 
 
 @dataclass
 class ProcessedContent:
     title: str
     url: str
-    html_content: str
-    markdown_content: str
     notion_content: list
-    cleansed_content: str
+    cleansed_content: str | None = None
     tags: list[str] | None = None
 
 
@@ -56,84 +50,50 @@ def get_web_content(
     if url.startswith("https://arxiv.org/"):
         arxiv_id = url.split("/")[-1]
         info = next(arxiv.Search(id_list=[arxiv_id]).results())
-        translator = pipeline("translation", model="staka/fugumt-en-ja")
-        translated_abstract = translator(info.summary)[0]["translation_text"]
-        del translator
-
-        subprocess.run(
-            ["/bin/bash", "scripts/arxiv-download.sh", arxiv_id, cache_path.absolute()],
-            timeout=100,
-        )
-
-        for root, dirs, files in os.walk(top=cache_path.absolute()):
-            for file in files:
-                if file.endswith(".pdf"):
-                    path = Path(os.path.join(root, file))
-                    image = pdf2image.convert_from_path(path)
-                    image[0].save(path.with_suffix(".png"), "PNG")
-
-                if file.endswith(".tex"):
-                    path = Path(os.path.join(root, file))
-                    with open(path, "r") as f:
-                        text = f.read()
-
-                    if ".pdf" in text:
-                        # replace .pdf with .png and save
-                        text = text.replace(".pdf", ".png")
-                        with open(path, "w") as f:
-                            f.write(text)
+        info.download_pdf(cache_path.absolute().__str__(), filename=arxiv_id + ".pdf")
 
         subprocess.run(
             [
                 "docker",
                 "exec",
-                "engrafo",
-                "engrafo",
-                "output/",
-                "output/",
+                "pdf-reader",
+                "python",
+                "puddle.py",
+                f"/home/workspace/pdf-reader/output/{arxiv_id}.pdf",
+                "/home/workspace/pdf-reader/output/",
             ],
-            timeout=1000,
+            timeout=3000,
             stdout=subprocess.DEVNULL,
         )
-        html = open("/home/workspace/notion-auto-archive/content/index.html").read()
-        soup = BeautifulSoup(html, "html.parser")
 
-        figures = []
-        for fig in soup.find_all("figure"):
-            figure = {}
-            if not len(fig.find_all("td")) > 0:
-                for img, caption in zip(
-                    fig.find_all("img"), fig.find_all("figcaption")
-                ):
-                    figures.append({"img": img, "caption": caption.text})
+        markdown_content = "\n".join(
+           [f"![{i}.png]({path})" for i, path in enumerate(cache_path.glob("*.png"))]
+        )
 
-        html_figures = []
-        for figure in figures:
-            html_figures.append(
-                f"""
-                <span>
-                    {str(figure["img"])}
-                    <p>{figure["caption"]}</p>
-                </span>
-                """
-            )
+        with open(cache_path.absolute() / "content.md", "w") as f:
+            f.write(markdown_content)
 
-        html_content = f"""
-            <html>
-                <body>
-                    <h2>Abstract</h2>
-                        <p>{translated_abstract}</p>
-                    <h2>Figures</h2>
-                    <div>
-                        {''.join(list(map(
-                            lambda x: f"<section>{str(x)}</section>", html_figures
-                        )))}
-                    </div>
-                </body>
-            </html>
-            """
+        subprocess.run(
+            [
+                "node",
+                "js/markdown_to_notion.js",
+                cache_path.absolute() / "content.md",
+                cache_path.absolute() / "content.json",
+            ]
+        )
 
-        title = info.title
+        with open(cache_path.absolute() / "content.json", "r") as f:
+            notion_content = json.load(f)
+
+        return ProcessedContent(
+            title=info.title,
+            url=url,
+            notion_content=notion_content,
+            tags=[
+                arxiv_categories[info.categories[i]]
+                for i in range(len(info.categories))
+            ],
+        )
     else:
         subprocess.run(
             ["node", "js/readable.js", url, cache_path.absolute() / "readable.json"]
@@ -145,48 +105,38 @@ def get_web_content(
         title = ret["title"]
         html_content = ret["content"]
 
-    markdown_content = markdownify(
-        html_content, heading_style="ATX", escape_underscores=False
-    )
-    markdown_content = re.sub(
-        pattern=r"(\#\s\n)",
-        repl="# ",
-        string=markdown_content,
-    )
+        markdown_content = markdownify(
+            html_content, heading_style="ATX", escape_underscores=False
+        )
+        markdown_content = re.sub(
+            pattern=r"(\#\s\n)",
+            repl="# ",
+            string=markdown_content,
+        )
 
-    with open(cache_path.absolute() / "content.md", "w") as f:
-        f.write(markdown_content)
+        with open(cache_path.absolute() / "content.md", "w") as f:
+            f.write(markdown_content)
 
-    subprocess.run(
-        [
-            "node",
-            "js/markdown_to_notion.js",
-            cache_path.absolute() / "content.md",
-            cache_path.absolute() / "content.json",
-        ]
-    )
+        subprocess.run(
+            [
+                "node",
+                "js/markdown_to_notion.js",
+                cache_path.absolute() / "content.md",
+                cache_path.absolute() / "content.json",
+            ]
+        )
 
-    with open(cache_path.absolute() / "content.json", "r") as f:
-        notion_content = json.load(f)
-
-    if url.startswith("https://arxiv.org/"):
-        cleansed_content = info.summary.replace("\n", " ")
-        tags = [
-            arxiv_categories[info.categories[i]] for i in range(len(info.categories))
-        ]
-    else:
         cleansed_content = cleansing_text_to_feed(markdown_content)
-        tags = None
 
-    return ProcessedContent(
-        title=title,
-        url=url,
-        html_content=html_content,
-        markdown_content=markdown_content,
-        cleansed_content=cleansed_content,
-        notion_content=notion_content,
-        tags=tags,
-    )
+        with open(cache_path.absolute() / "content.json", "r") as f:
+            notion_content = json.load(f)
+
+        return ProcessedContent(
+            title=title,
+            url=url,
+            cleansed_content=cleansed_content,
+            notion_content=notion_content,
+        )
 
 
 def cleansing_text_to_feed(text: str) -> str:
