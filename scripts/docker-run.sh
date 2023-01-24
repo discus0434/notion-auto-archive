@@ -5,13 +5,17 @@ docker run -it \
     --gpus all \
     --env-file ./.env  \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    -v engrafo:/home/workspace/notion-auto-archive/content \
+    -v output:/home/workspace/notion-auto-archive/output \
     -d \
     --restart=always \
     notion-auto-archive:latest /bin/bash
 
 docker run -it \
-    --name engrafo \
-    -v engrafo:/app/output \
+    --name pdf-reader \
+    --runtime=nvidia \
+    --gpus all \
+    -v output:/home/workspace/pdf-reader/output \
     -d \
-    arxivvanity/engrafo:latest /bin/bash
+    --restart=always \
+    pdf-reader:latest /bin/bash
+
