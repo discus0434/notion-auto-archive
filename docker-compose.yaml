@@ -6,12 +6,12 @@ services:
       - 8080:80
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./engrafo:/home/workspace/engrafo
+      - ./output:/home/workspace/output
     env_file:
       - .env
-  engrafo:
-    image: arxivvanity/engrafo:latest
+  pdf-reader:
+    image: pdf-reader:latest
     ports:
       - 8081:80
     volumes:
-      - ./engrafo:/app/output
+      - ./output:/home/workspace/pdf-reader/output
