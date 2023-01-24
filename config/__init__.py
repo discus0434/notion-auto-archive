@@ -1,4 +1,5 @@
 from .config import (
+    ARXIV_CATEGORIES,
     CACHE_PATH,
     CANDIDATE_LABELS,
     DATABASE_ID,
@@ -26,4 +27,5 @@ __all__ = [
     "TWITTER_USER_NAME",
     "URLS_LOG_PATH",
     "CACHE_PATH",
+    "ARXIV_CATEGORIES",
 ]
