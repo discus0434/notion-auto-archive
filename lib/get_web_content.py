@@ -64,7 +64,7 @@ def get_web_content(
                 "--out_path",
                 "/home/workspace/pdf-reader/output/",
             ],
-            timeout=3600,
+            timeout=7200,
             stdout=subprocess.DEVNULL,
         )
 

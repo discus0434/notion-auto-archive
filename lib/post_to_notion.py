@@ -182,5 +182,6 @@ def upload_image_to_gyazo(image: bytes, access_token: str) -> requests.Response:
         headers={"Authorization": f"Bearer {access_token}"},
         files=files,
     )
+    time.sleep(10)
 
     return res
